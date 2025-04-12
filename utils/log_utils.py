@@ -1,6 +1,5 @@
 import re
 from models.sql.setup import setup_database
-import sqlite3
 from models.sql.user import User
 
 

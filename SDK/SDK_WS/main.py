@@ -3,10 +3,8 @@ import socketio
 import time
 from enum import Enum
 import uuid
-import traceback
-import inspect
 from datetime import datetime
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any
 
 class LogType(Enum):
     INFO = "INFO"

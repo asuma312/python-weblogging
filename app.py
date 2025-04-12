@@ -3,9 +3,6 @@ from flask_socketio import SocketIO
 from dotenv import load_dotenv
 import os
 from models import db
-from pyspark.sql import SparkSession
-import findspark
-findspark.init() 
 load_dotenv()
 
 

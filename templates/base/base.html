@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="{{url_for('static', filename='js/modal.js')}}"></script>
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PyWebLog - Modern Python Weblogging</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50">
+  {% include 'base/nav.html' %}
+  {% block content %}{% endblock %}
+  {% include 'base/footer.html' %}
+  </body>
+
+</html>

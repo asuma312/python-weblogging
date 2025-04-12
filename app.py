@@ -3,6 +3,7 @@ from flask_socketio import SocketIO
 from dotenv import load_dotenv
 import os
 from models import db
+from flasgger import Swagger
 load_dotenv()
 
 
@@ -34,13 +35,19 @@ def create_app():
 
     from routes.logs import logs_bp
     from routes.auth import auth_bp
+    from routes.main import main_bp
+
+    app.register_blueprint(main_bp)
 
     app.register_blueprint(logs_bp, url_prefix='/api/v1/logs')
     app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')
 
+    swagger = Swagger(app)
+
+
     @app.route("/debug")
     def debug():
-        return render_template("index.html")
+        return render_template("debug.html")
     
     return app
 

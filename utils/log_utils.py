@@ -26,14 +26,21 @@ def insert_log(log: str, user: User):
 
 
 def insert_multiple_logs(logs: list[str], user: User):
-
     conn = setup_database(user)
     cursor = conn.cursor()
     cursor.execute('BEGIN TRANSACTION')
+    inserted_items = []
     for log in logs:
         date_str, log_type, function, message = parse_log(log)
         function = function.split(" - ")[-1].strip()
         cursor.execute("INSERT INTO logs (data, type, function, message) VALUES (?, ?, ?, ?)",
                        (date_str, log_type, function, message))
+        inserted_items.append({
+            'log_id': cursor.lastrowid,
+            'data_inserted': log
+        })
     cursor.execute('END TRANSACTION')
     conn.commit()
+    cursor.close()
+    conn.close()
+    return inserted_items

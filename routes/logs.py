@@ -14,6 +14,44 @@ logs_bp = Blueprint('logs', __name__)
 @logs_bp.route('/insert_log',methods=['PUT'])
 @verify_token()
 def insert_log_to_backend():
+    """
+    Insert a log.
+    ---
+    tags:
+      - logs
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: "The logstring needs to be in this specific pattern (date time - type [parent:parent - function name] - message), its better to use the SDK client for this"
+        schema:
+          type: object
+          properties:
+            log:
+              type: string
+    description: Inserts a log into the backend.
+    responses:
+      200:
+        description: Returns the inserted log ID
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            log_id:
+              type: integer
+            data_inserted:
+              type: string
+      400:
+        description: Validation error
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            message:
+              type: string
+    """
     user = g.user
     data = request.get_json()
     log = data.get('log')
@@ -25,6 +63,46 @@ def insert_log_to_backend():
 @logs_bp.route("/insert_multiple_logs",methods=['PUT'])
 @verify_token()
 def insert_multiple_logs():
+    """
+    Insert multiple logs.
+    ---
+    tags:
+      - logs
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: "Body containing a list of logs"
+        schema:
+          type: object
+          properties:
+            logs:
+              type: array
+              items:
+                type: string
+    description: Inserts a list of logs into the backend.
+    responses:
+      200:
+        description: List of inserted logs
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            inserted:
+              type: array
+              items:
+                type: object
+      400:
+        description: Validation error
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            message:
+              type: string
+    """
     user = g.user
     data = request.get_json()
     logs:list = data.get('logs')
@@ -32,11 +110,63 @@ def insert_multiple_logs():
         return jsonify({'status':'error','message':'logs is required'}),400
     if not isinstance(logs, list):
         return jsonify({'status':'error','message':'logs must be a list'}),400
+    from utils.log_utils import insert_multiple_logs as insert_multi
+    inserted_data = insert_multi(logs, user)
+    return jsonify({'status':'success','inserted':inserted_data}),200
 
 
 @logs_bp.route('/select_logs',methods=['POST'])
 @verify_token()
 def select_logs():
+    """
+    Select logs.
+    ---
+    tags:
+      - logs
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            types:
+              type: array
+              items:
+                type: string
+            function_name:
+              type: string
+            data_start:
+              type: string
+            data_end:
+              type: string
+    description: Filters and paginates logs.
+    responses:
+      200:
+        description: Returns the log list
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            data:
+              type: array
+              items:
+                type: object
+      400:
+        description: Validation error
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            message:
+              type: string
+    """
     user = g.user
     data = request.get_json()
 
@@ -139,6 +269,50 @@ def select_logs():
 @logs_bp.route("/get_log")
 @verify_token()
 def get_specific_log():
+    """
+    Get a specific log.
+    ---
+    tags:
+      - logs
+    parameters:
+      - name: log_id
+        in: query
+        required: true
+        description: "ID of the log to be retrieved"
+        schema:
+          type: integer
+    description: Returns a log by the provided ID.
+    responses:
+      200:
+        description: Log found
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            data:
+              type: object
+      400:
+        description: Validation error
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            message:
+              type: string
+      404:
+        description: Log not found
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+            message:
+              type: string
+            data:
+              type: object
+    """
     user = g.user
     args = request.args
     log_id = args.get("log_id")
@@ -165,3 +339,4 @@ def get_specific_log():
     columns = ["id", "data", "type", "function", "message"]
     json = [dict(zip(columns, row)) for row in rows]
     return jsonify({"status": "success", "data": json[0]}), 200
+

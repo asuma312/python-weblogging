@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogSQL - WebSocket</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/socket.js') }}"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .panel { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        h2 { margin-top: 0; }
+        button { padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0 15px; box-sizing: border-box; }
+        .output { background-color: #f5f5f5; padding: 10px; border-radius: 4px; min-height: 100px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LogSQL WebSocket Client</h1>
+        
+        <div class="panel">
+            <h2>Autenticação</h2>
+            <div>
+                <label for="username">Usuário:</label>
+                <input type="text" id="username" placeholder="Digite seu usuário">
+            </div>
+            <div>
+                <label for="password">Senha:</label>
+                <input type="password" id="password" placeholder="Digite sua senha">
+            </div>
+            <div>
+                <button onclick="loginUser()">Login</button>
+                <button onclick="createUser()">Criar Conta</button>
+                <button onclick="logoutUser()">Logout</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Inserir Log</h2>
+            <div>
+                <label for="logContent">Conteúdo do Log:</label>
+                <textarea id="logContent" rows="5" placeholder="Dados do log em formato JSON"></textarea>
+            </div>
+            <div>
+                <button onclick="insertSingleLog()">Inserir Log</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Buscar Logs</h2>
+            <div>
+                <label for="page">Página:</label>
+                <input type="number" id="page" value="1" min="1">
+            </div>
+            <div>
+                <label for="limit">Limite por página:</label>
+                <input type="number" id="limit" value="10" min="1">
+            </div>
+            <div>
+                <button onclick="searchLogs()">Buscar Logs</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Resultado</h2>
+            <pre class="output" id="output"></pre>
+        </div>
+    </div>
+
+    <script>
+        let client;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            client = new LogSQLClient(window.location.origin);
+            displayOutput('Cliente WebSocket iniciado. Pronto para conectar.');
+        });
+
+        function displayOutput(message) {
+            if (typeof message === 'object') {
+                message = JSON.stringify(message, null, 2);
+            }
+            document.getElementById('output').textContent = message;
+        }
+
+        function createUser() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                return displayOutput('Preencha usuário e senha');
+            }
+            
+            client.createAccount(username, password, (response) => {
+                displayOutput(response);
+            });
+        }
+
+        function loginUser() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                return displayOutput('Preencha usuário e senha');
+            }
+            
+            client.login(username, password, (response) => {
+                displayOutput(response);
+            });
+        }
+
+        function logoutUser() {
+            client.logout((response) => {
+                displayOutput(response);
+            });
+        }
+
+        function insertSingleLog() {
+            const logContent = document.getElementById('logContent').value;
+            
+            try {
+                const logData = logContent;
+                client.insertLog(logData, (response) => {
+                    displayOutput(response);
+                });
+            } catch (e) {
+                displayOutput(`Erro: ${e.message}`);
+            }
+        }
+
+        function searchLogs() {
+            const page = document.getElementById('page').value;
+            const limit = document.getElementById('limit').value;
+            
+            client.selectLogs({ page, limit }, (response) => {
+                displayOutput(response);
+            });
+        }
+    </script>
+</body>
+</html>

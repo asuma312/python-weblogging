@@ -1,4 +1,4 @@
-from flask import request,jsonify,g
+from flask import request,jsonify,g,session,redirect
 from functools import wraps
 from models.sql.user import User
 from flask_socketio import emit
@@ -32,5 +32,18 @@ def authenticated_only(f):
             return
         data['user'] = authenticated_sessions[session_id]
         return f(data, *args, **kwargs)
+    return wrapped
+
+def frontend_login(f):
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        user_hash = session.get('uh')
+        if not user_hash:
+            return redirect('/login')
+        user = User.query.filter_by(userhash=user_hash).first()
+        if not user:
+            return redirect('/login')
+        g.user = user
+        return f(*args, **kwargs)
     return wrapped
 

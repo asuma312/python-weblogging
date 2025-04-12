@@ -258,7 +258,7 @@ class LogSQLWSHandler(logging.Handler):
 
 def setup_ws_logger(
     name: str, 
-    server_url: str = "http://localhost:1234",
+    server_url: str = "https://pythonweblog.com",
     username: str = None, 
     password: str = None, 
     token: str = None,

@@ -1,1 +1,1 @@
-from main import setup_ws_logger
+from SDK.SDK_WS.main import setup_ws_logger

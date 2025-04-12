@@ -45,8 +45,8 @@ class LogSQLWSClient:
                 self.authenticate()
                 
         except Exception as e:
-            print(f"Erro ao conectar ao servidor: {e}")
-            
+            raise Exception(f"Erro ao conectar ao servidor: {e}")
+
     def _register_handlers(self):
         """Registra os manipuladores de eventos Socket.IO"""
         
@@ -149,11 +149,10 @@ class LogSQLWSClient:
         })
         
         response = self._wait_for_response('login')
-        print(response)
         if response.get('status') == 'success':
             self.token = response.get('token')
             return True
-        return False
+        raise Exception("Falha na autenticação")
     
     def logout(self) -> Dict[str, Any]:
         """
@@ -254,7 +253,7 @@ class LogSQLWSHandler(logging.Handler):
                 full_log=f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')[:-3]} - {log_type_map.get(record.levelno, LogType.ALL).value} [{record.pathname}:{record.lineno} - {record.funcName}()] - {record.getMessage()}"
             )
         except Exception as e:
-            print(f"Erro ao processar log no LogSQLWSHandler: {e}")
+            raise Exception(f"Erro ao enviar log para o servidor: {e}")
 
 
 def setup_ws_logger(

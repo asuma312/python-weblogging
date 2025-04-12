@@ -10,7 +10,7 @@ socketio = SocketIO()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLITE_DBPATH'] = app.root_path + '/db/'
+    app.config['SQLITE_DBPATH'] = app.root_path + os.getenv('USERS_LOGDB_PATH')
     app.config['JWT_SECRET_TOKEN'] = os.getenv('JWT_SECRET_TOKEN')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')

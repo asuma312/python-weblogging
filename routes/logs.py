@@ -2,7 +2,6 @@ from flask import *
 from utils.log_utils import insert_log
 from utils.path import get_user_path
 from datetime import datetime
-from pyspark.sql.functions import col
 from models.dataclasses.logtypes import LOGTYPES
 from utils.decorators import verify_token
 from models.sql.setup import setup_database

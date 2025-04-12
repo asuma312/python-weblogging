@@ -51,11 +51,9 @@ class LogSQLClient:
                 self.token = response.json().get("token")
                 return True
             else:
-                print(f"Erro de autenticação: {response.json().get('error', 'Erro desconhecido')}")
-                return False
+                raise Exception("Erro de autenticação: " + str(response.status_code))
         except Exception as e:
-            print(f"Erro ao autenticar: {e}")
-            return False
+            raise Exception(f"Erro ao autenticar: {e}") from e
     
     def insert_log(self, full_log:str) -> Dict[str, Any]:
         """
@@ -83,8 +81,7 @@ class LogSQLClient:
             
             return response.json()
         except Exception as e:
-            print(f"Erro ao inserir log: {e}")
-            return {"status": "error", "message": str(e)}
+            raise Exception(f"Erro ao inserir log: {e}") from e
 
 
 class LogSQLHandler(logging.Handler):
@@ -123,7 +120,7 @@ class LogSQLHandler(logging.Handler):
                 full_log=f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')[:-3]} - {log_type_map.get(record.levelno, LogType.ALL).value} [{record.pathname}:{record.lineno} - {record.funcName}()] - {record.getMessage()}"
             )
         except Exception as e:
-            print(f"Erro ao processar log no LogSQLHandler: {e}")
+            raise Exception(f"Erro ao enviar log: {e}") from e
 
 
 def setup_logger(
@@ -154,8 +151,6 @@ def setup_logger(
     logger.setLevel(level)
     
     handler = LogSQLHandler(client=client, level=level)
-#exemplo "2025-04-09 00:48:07,905 - WARNING [dialogflow_handlers.py:14 - parse_and_send()] - Agent Response: ['Gostaria de deixar alguma observação ou sugestão?']"
-    #primeiro é o datetime - level [function] - logmessage
 
     formatter = logging.Formatter('%(asctime)s - %(levelname)s [%(pathname)s:%(lineno)d - %(funcName)s()] - %(message)s')
     handler.setFormatter(formatter)

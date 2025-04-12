@@ -3,7 +3,7 @@ from models.sql.setup import setup_database
 from models.sql.user import User
 
 
-def parse_log(log:str)->tuple|None:
+def parse_log(log:str):
     pattern = r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (\w+) \[(.+?)\] - (.+)'
     match = re.match(pattern, log)
     if match:

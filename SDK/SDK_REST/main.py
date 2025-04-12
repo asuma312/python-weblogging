@@ -123,7 +123,7 @@ class LogSQLHandler(logging.Handler):
             raise Exception(f"Erro ao enviar log: {e}") from e
 
 
-def setup_logger(
+def setup_rest_logger(
     name: str, 
     base_url: str = "http://localhost:1234",
     username: str = None, 

@@ -1,1 +1,1 @@
-from SDK.SDK_WS.main import setup_ws_logger
+from pyweblog.SDK_WS.main import setup_ws_logger

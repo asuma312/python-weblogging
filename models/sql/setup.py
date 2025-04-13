@@ -6,9 +6,9 @@ from datetime import datetime
 import sqlite3
 
 
-def setup_database(user:User):
+def setup_database(user:User, log_name:str = 'default'):
     db_path = get_user_path(user)
-    db_name = 'log_1.sqlite'
+    db_name = f'log_{log_name}.sqlite'
     full_db_path = os.path.join(db_path, db_name)
     conn = sqlite3.connect(full_db_path)
     cursor = conn.cursor()

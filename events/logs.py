@@ -15,12 +15,13 @@ def register_logs_events(socketio):
     def handle_insert_log(data):
         user = data.get('user')
         log = data.get('log')
+        log_name = data.get("log_name", 'default')
         
         if not log:
             return emit('insert_log_response', {'status': 'error', 'message': 'log is required'})
         
         try:
-            log_id = insert_log(log, user)
+            log_id = insert_log(log, user, log_name)
         except Exception as e:
             return emit('insert_log_response', {'status': 'error', 'message': 'log is invalid', 'error': str(e)})
         emit('insert_log_response', {'status': 'success', 'log_id': log_id, 'data_inserted': log})
@@ -30,6 +31,7 @@ def register_logs_events(socketio):
     def handle_insert_multiple_logs(data):
         user = data.get('user')
         logs = data.get('logs')
+        log_name = data.get("log_name", 'default')
         
         if not logs:
             return emit('insert_multiple_logs_response', {'status': 'error', 'message': 'logs is required'})
@@ -39,7 +41,7 @@ def register_logs_events(socketio):
         
         log_ids = []
         for log in logs:
-            log_id = insert_log(log, user)
+            log_id = insert_log(log, user, log_name)
             log_ids.append(log_id)
             
         emit('insert_multiple_logs_response', {'status': 'success', 'log_ids': log_ids})
@@ -50,6 +52,7 @@ def register_logs_events(socketio):
         user = data.get('user')
         
         page = data.get("page")
+        log_name = data.get("log_name", 'default')
         if not page:
             return emit('select_logs_response', {'status': 'error', 'message': 'page is required'})
         if not str(page).isdigit():
@@ -99,7 +102,7 @@ def register_logs_events(socketio):
             except ValueError:
                 return emit('select_logs_response', {'status': 'error', 'message': 'data_end must be a datetime'})
 
-        conn = setup_database(user)
+        conn = setup_database(user, log_name)
         cur = conn.cursor()
 
         query = """

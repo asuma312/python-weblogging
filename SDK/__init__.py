@@ -1,7 +1,5 @@
-from SDK.SDK_REST.main import LogSQLClient, LogSQLHandler, LogType, setup_rest_logger
-from SDK.SDK_WS.main import LogSQLWSClient, LogSQLWSHandler, setup_ws_logger
+from .SDK_WS.main import LogSQLWSClient as LogClient, LogSQLWSHandler as LogHandler, setup_ws_logger as SetupLogger
 
 __all__ = [
-    'LogSQLClient', 'LogSQLHandler', 'LogType', 'setup_rest_logger',
-    'LogSQLWSClient', 'LogSQLWSHandler', 'setup_ws_logger'
+    'LogClient', 'LogHandler', 'SetupLogger'
 ]

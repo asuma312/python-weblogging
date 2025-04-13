@@ -15,7 +15,7 @@ class LogType(Enum):
     ALL = "ALL"
 
 class LogSQLWSClient:
-    def __init__(self, server_url: str, username: str = None, password: str = None, token: str = None):
+    def __init__(self, server_url: str, username: str = None, password: str = None, token: str = None, log_name = 'default'):
         """
         Inicializa o cliente WebSocket para LogSQL.
         
@@ -29,6 +29,7 @@ class LogSQLWSClient:
         self.token = token
         self.username = username
         self.password = password
+        self.log_name = log_name
         self.session_id = str(uuid.uuid4())
         
         self.sio = socketio.Client()
@@ -193,7 +194,8 @@ class LogSQLWSClient:
 
         self.sio.emit('insert_log', {
             'session_id': self.session_id,
-            'log': full_log
+            'log': full_log,
+            'log_name': self.log_name,
         })
         
         r = self._wait_for_response('insert_log')
@@ -262,7 +264,8 @@ def setup_ws_logger(
     username: str = None, 
     password: str = None, 
     token: str = None,
-    level: int = logging.INFO
+    level: int = logging.INFO,
+        log_name:str = 'default'
 ) -> logging.Logger:
     """
     Configura e retorna um logger com o LogSQLWSHandler.
@@ -278,7 +281,7 @@ def setup_ws_logger(
     Returns:
         logging.Logger: O logger configurado
     """
-    client = LogSQLWSClient(server_url=server_url, username=username, password=password, token=token)
+    client = LogSQLWSClient(server_url=server_url, username=username, password=password, token=token, log_name=log_name)
     
     logger = logging.getLogger(name)
     logger.setLevel(level)

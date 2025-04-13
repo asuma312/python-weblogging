@@ -15,7 +15,7 @@ class LogType(Enum):
     ALL = "ALL"
 
 class LogSQLClient:
-    def __init__(self, base_url: str, username: str = None, password: str = None, token: str = None):
+    def __init__(self, base_url: str, username: str = None, password: str = None, token: str = None, log_name='default'):
         """
         Inicializa o cliente LogSQL.
         
@@ -28,6 +28,7 @@ class LogSQLClient:
         self.base_url = base_url.rstrip('/')+'/api/v1'
         self.token = token
         self.username = username
+        self.log_name = log_name
         self.password = password
         
         # Autenticar se credenciais forem fornecidas e não houver token
@@ -75,7 +76,7 @@ class LogSQLClient:
         try:
             response = requests.put(
                 f"{self.base_url}/logs/insert_log",
-                json={"log": full_log},
+                json={"log": full_log, 'log_name':self.log_name},
                 headers={"Authorization": f"Bearer {self.token}"}
             )
             

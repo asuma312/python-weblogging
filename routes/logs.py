@@ -57,7 +57,8 @@ def insert_log_to_backend():
     log = data.get('log')
     if not log:
         return jsonify({'status':'error','message':'log is required'}),400
-    log_id = insert_log(log,user)
+    log_name = data.get("log_name", 'default')
+    log_id = insert_log(log,user,log_name)
     return jsonify({'status':'success','log_id':log_id,'data_inserted':log}),200
 
 @logs_bp.route("/insert_multiple_logs",methods=['PUT'])
@@ -106,12 +107,13 @@ def insert_multiple_logs():
     user = g.user
     data = request.get_json()
     logs:list = data.get('logs')
+    log_name:str = data.get('log_name')
     if not logs:
         return jsonify({'status':'error','message':'logs is required'}),400
     if not isinstance(logs, list):
         return jsonify({'status':'error','message':'logs must be a list'}),400
     from utils.log_utils import insert_multiple_logs as insert_multi
-    inserted_data = insert_multi(logs, user)
+    inserted_data = insert_multi(logs, user, log_name)
     return jsonify({'status':'success','inserted':inserted_data}),200
 
 
@@ -170,6 +172,8 @@ def select_logs():
     user = g.user
     data = request.get_json()
 
+    log_name = data.get("log_name", 'default')
+
     page = data.get("page")
     if not page:
         return jsonify({'status':'error','message':'page is required'}),400
@@ -220,7 +224,7 @@ def select_logs():
             data_end = datetime.strptime(data_end, '%Y-%m-%d %H:%M:%S')
         except ValueError:
             return jsonify({'status':'error','message':'data_end must be a datetime'}),400
-    conn = setup_database(user)
+    conn = setup_database(user, log_name)
     cur = conn.cursor()
 
     query = """

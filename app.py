@@ -19,8 +19,6 @@ def create_app():
     for key in os.environ.keys():
         app.config[key] = os.environ[key]
 
-    #import models for sqlalchemy
-
     with app.app_context():
         db.init_app(app)
         db.create_all()
@@ -31,18 +29,22 @@ def create_app():
     
     from events.logs import register_logs_events
     from events.auth import register_auth_events
+    from events.notifications import register_notification_events
     
     register_logs_events(socketio)
     register_auth_events(socketio)
+    register_notification_events(socketio)
 
     from routes.api.logs import logs_bp
     from routes.api.auth import auth_bp
     from routes.main import main_bp
+    from routes.api.frontend import frontendapi_bp
 
     app.register_blueprint(main_bp)
 
     app.register_blueprint(logs_bp, url_prefix='/api/v1/logs')
     app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')
+    app.register_blueprint(frontendapi_bp, url_prefix='/api/v1/frontend')
 
     swagger = Swagger(app)
 
@@ -55,4 +57,5 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    socketio.run(app, host='0.0.0.0', port=1234, debug=True,allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=1234, debug=True, allow_unsafe_werkzeug=True)
+

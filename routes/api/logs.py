@@ -356,25 +356,4 @@ def get_specific_log():
     json = [dict(zip(columns, row)) for row in rows]
     return jsonify({"status": "success", "data": json[0]}), 200
 
-@logs_bp.route("/delete_logdb",methods=['DELETE'])
-@frontend_login
-def delete_logdb():
-    user = g.user
-    data = request.get_json()
-    log_name = data.get("log_name", 'default')
-    if not log_name:
-        return jsonify({'status':'error','message':'log_name is required'}),400
-    if not isinstance(log_name, str):
-        return jsonify({'status':'error','message':'log_name must be a string'}),400
-    if len(log_name) > 50:
-        return jsonify({'status':'error','message':'log_name must be less than 50 characters'}),400
-    user_path = get_user_path(user)
-    db = os.path.join(user_path, f"log_{log_name}.sqlite")
-    print(db)
-    if not os.path.exists(db):
-        return jsonify({'status':'error','message':'log_name not found'}),400
-    try:
-        os.remove(db)
-    except Exception as e:
-        return jsonify({'status':'error','message':str(e)}),400
-    return jsonify({'status':'success','message':'log_name deleted'}),200
+

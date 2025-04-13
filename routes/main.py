@@ -1,4 +1,5 @@
 import os
+from models import EmailToContact
 from flask import *
 from utils.decorators import frontend_login
 from utils.path import get_user_path
@@ -6,7 +7,6 @@ from models.dataclasses.logtypes import LOGTYPES
 from datetime import datetime, timedelta
 from models.sql.setup import setup_database
 
-import threading
 main_bp = Blueprint('main', __name__, url_prefix='/')
 
 @main_bp.route('/')
@@ -139,9 +139,16 @@ def dashboard():
         cursor = conn.cursor()
         cursor.execute(formated_query, params)
         rows = [row for row in cursor.fetchall()]
-        last_row = rows[0]
-        if last_row:
-            total_log += last_row[0]
+
+        count_logs_query = formated_query
+        count_logs_params = params.copy()[:-2]
+        count_logs_query = count_logs_query.replace("LIMIT ?", "LIMIT 1")
+        count_logs_query = count_logs_query.replace("OFFSET ?", "OFFSET 0")
+        count_logs_query = count_logs_query.replace("SELECT id, data, type, function, message", "SELECT id")
+        count_logs = cursor.execute(count_logs_query, count_logs_params).fetchone()[0]
+        total_log += count_logs
+
+
 
 
         error_placeholders = ','.join(['?'] * len(error_types))
@@ -171,9 +178,13 @@ def dashboard():
 
         cursor.close()
         conn.close()
+
+    total_pages = int(total_log / limit)
+
+    has_next_page = int(page) < total_pages
     return render_template('main/dashboard.html',database_logs=database_logs,logs=logs,
                            selected_log = selected_log, total_log=total_log, total_errors=total_errors,
-                           total_warnings=total_warnings)
+                           total_warnings=total_warnings, has_next_page=has_next_page)
 
 @main_bp.route("/logout")
 @frontend_login
@@ -187,8 +198,9 @@ def logout():
 def settings():
     user = g.user
     user_path = get_user_path(user)
+    user_emails = EmailToContact.query.filter_by(userhash=user.userhash).all()
     database_logs = [
         db.split("log_")[-1].split(".sqlite")[0]
         for db in os.listdir(user_path) if db.endswith('.sqlite')
     ]
-    return render_template('main/settings.html',database_logs=database_logs)
+    return render_template('main/settings.html',database_logs=database_logs,emails=user_emails)

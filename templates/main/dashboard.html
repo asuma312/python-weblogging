@@ -1,240 +1,218 @@
 {% extends "base/main_base.html" %}
 {% set page_title = "Dashboard" %}
-
 {% block content %}
-<script src="{{url_for('static', filename='js/dashboard.js')}}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<div class="container mx-auto p-4">
 
-<div class="bg-white rounded-lg shadow p-5 mb-6">
-    <div class="flex items-center justify-between">
-        <h3 class="text-lg font-medium text-gray-700">Log selection</h3>
-        <div class="w-1/3">
-            <select onchange="selectLog(this)" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
-                <option value="all">All</option>
+    <!-- Seção de Seleção de Log -->
+    <div class="bg-white rounded-lg shadow p-5 mb-6">
+        <div class="flex flex-col sm:flex-row items-center justify-between">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 sm:mb-0">Selecione um Log</h3>
+            <select onchange="selectLog(this)" class="w-full sm:w-auto bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                <option value="all">Todos</option>
                 {% for option in database_logs %}
-                <option value="{{ option }}" {% if option == selected_log %}selected{% endif %}>
-                    {{ option }}
-                </option>
+                <option value="{{ option }}" {% if option == selected_log %}selected{% endif %}>{{ option }}</option>
                 {% endfor %}
             </select>
         </div>
     </div>
-</div>
 
-<div id="filter-container" class="bg-white rounded-lg shadow p-5 mb-6">
-    <h3 class="text-lg font-medium text-gray-700 mb-4">Filtros</h3>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Log types</label>
-            <div class="relative">
-                <button id="type-dropdown-btn" type="button" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-left flex justify-between items-center">
-                    <span>Select a log</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <div id="type-dropdown" class="hidden absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 overflow-auto max-h-48 border border-gray-200">
-                    <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="info">Info</a>
-                    <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="warning">Warning</a>
-                    <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="error">Error</a>
-                    <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="debug">Debug</a>
-                    <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="critical">Critical</a>
-                    <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="success">Success</a>
-                    <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="failure">Failure</a>
-                    <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="all">Todos</a>
+    <!-- Seção de Filtros -->
+    <div id="filter-container" class="bg-white rounded-lg shadow p-5 mb-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Filtros</h3>
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tipos de Log</label>
+                <div class="relative">
+                    <button id="type-dropdown-btn" type="button" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-left flex justify-between items-center">
+                        <span>Selecione</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div id="type-dropdown" class="hidden absolute z-10 mt-1 w-full bg-white shadow-md rounded-md py-1 max-h-48 overflow-auto border border-gray-200">
+                        <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="info">Info</a>
+                        <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="warning">Warning</a>
+                        <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="error">Error</a>
+                        <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="debug">Debug</a>
+                        <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="critical">Critical</a>
+                        <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="success">Success</a>
+                        <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="failure">Failure</a>
+                        <a href="#" class="type-option block px-4 py-2 text-sm hover:bg-gray-100" data-value="all">Todos</a>
+                    </div>
                 </div>
+                <div id="selected-types" class="flex flex-wrap gap-2 mt-2"></div>
+                <select id="typesSelect" multiple class="hidden">
+                    <option value="info">info</option>
+                    <option value="warning">warning</option>
+                    <option value="error">error</option>
+                    <option value="debug">debug</option>
+                    <option value="critical">critical</option>
+                    <option value="success">success</option>
+                    <option value="failure">failure</option>
+                    <option value="all">all</option>
+                </select>
             </div>
-            <div id="selected-types" class="flex flex-wrap gap-2 mt-2">
-
+            <div>
+                <label for="functionNameInput" class="block text-sm font-medium text-gray-700 mb-1">Nome da Função</label>
+                <input type="text" id="functionNameInput" class="w-full rounded-lg border border-gray-300 px-4 py-2" placeholder="Nome da função..."
+                value="{{ request.args.get('function_name', '') }}"
+                >
             </div>
-
-            <select id="typesSelect" multiple class="hidden">
-                <option value="info">info</option>
-                <option value="warning">warning</option>
-                <option value="error">error</option>
-                <option value="debug">debug</option>
-                <option value="critical">critical</option>
-                <option value="success">success</option>
-                <option value="failure">failure</option>
-                <option value="all">all</option>
-            </select>
+            <div>
+                <label for="dataStartInput" class="block text-sm font-medium text-gray-700 mb-1">Data Início</label>
+                <input type="datetime-local" id="dataStartInput" class="w-full rounded-lg border border-gray-300 px-4 py-2"
+                value = "{{ request.args.get('data_start', '') }}"
+                >
+            </div>
+            <div>
+                <label for="dataEndInput" class="block text-sm font-medium text-gray-700 mb-1">Data Fim</label>
+                <input type="datetime-local" id="dataEndInput" class="w-full rounded-lg border border-gray-300 px-4 py-2"
+                value="{{ request.args.get('data_end', '') }}"
+                >
+            </div>
         </div>
-
-
-        <div>
-            <label for="functionNameInput" class="block text-sm font-medium text-gray-700 mb-1">Function Name</label>
-            <input type="text" id="functionNameInput" class="w-full rounded-lg border border-gray-300 px-4 py-2" placeholder="Function name...">
-        </div>
-
-
-        <div>
-            <label for="dataStartInput" class="block text-sm font-medium text-gray-700 mb-1">Initial date</label>
-            <input type="datetime-local" id="dataStartInput" class="w-full rounded-lg border border-gray-300 px-4 py-2">
-        </div>
-
-
-        <div>
-            <label for="dataEndInput" class="block text-sm font-medium text-gray-700 mb-1">Final date</label>
-            <input type="datetime-local" id="dataEndInput" class="w-full rounded-lg border border-gray-300 px-4 py-2">
+        <div class="flex justify-center items-center mt-5 space-x-4">
+            <button onclick="applyFilter()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-md transition">Aplicar Filtros</button>
+            <button onclick="resetFilters()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-5 py-2 rounded-md transition">Resetar Filtros</button>
         </div>
     </div>
 
-    <!-- Centralizar os botões de ação -->
-    <div class="flex justify-center items-center space-x-4 mt-5">
-        <button onclick="applyFilter()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg transition-colors">
-            Apply filters
-        </button>
-        <button onclick="resetFilters()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-5 py-2 rounded-lg transition-colors">
-            Reset filters
-        </button>
-    </div>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex flex-col">
-            <h3 class="text-sm font-medium text-gray-500 mb-1">Total logs</h3>
-            <p class="text-2xl font-semibold text-gray-900">{{ total_log }}</p>
+    <!-- Cards Resumo -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-sm font-medium text-gray-500">Total de Logs</h3>
+            <p class="text-2xl font-bold text-gray-900">{{ total_log }}</p>
         </div>
-    </div>
-
-
-<div class="bg-white rounded-lg shadow p-6 {% if total_errors > 0 %}border-l-4 border-red-500{% else %}border-l-4 border-green-500{% endif %} hover:shadow-lg transition-all duration-300">
-    <div class="flex flex-col">
-        <div class="flex items-center justify-between mb-2">
-            <h3 class="text-sm font-medium text-gray-600 flex items-center">
+        <div class="bg-white rounded-lg shadow p-6 {% if total_errors > 0 %}border-l-4 border-red-500{% else %}border-l-4 border-green-500{% endif %}">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-sm font-medium text-gray-600 flex items-center">
+                    {% if total_errors > 0 %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {% endif %}
+                    Erros 24h
+                </h3>
+                <span class="text-xs font-medium px-2 py-1 rounded-full {% if total_errors > 0 %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                    {% if total_errors > 0 %}Crítico{% else %}Estável{% endif %}
+                </span>
+            </div>
+            <p class="text-3xl font-bold {% if total_errors > 0 %}text-red-600{% else %}text-green-600{% endif %}">{{ total_errors }}</p>
+            <p class="text-xs text-gray-500 mt-2">
                 {% if total_errors > 0 %}
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+                <span class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Atenção
+                </span>
                 {% else %}
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <span class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    OK
+                </span>
                 {% endif %}
-                Errors in 24 Hours
-            </h3>
-            <span class="{% if total_errors > 0 %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %} text-xs px-2 py-1 rounded-full font-medium">
-                {% if total_errors > 0 %}Critical{% else %}Stable{% endif %}
-            </span>
+            </p>
         </div>
-        <p class="text-3xl font-bold {% if total_errors > 0 %}text-red-600{% else %}text-green-600{% endif %}">{{total_errors}}</p>
-        <div class="mt-2 text-xs text-gray-500">
-            {% if total_errors > 0 %}
-            <span class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Needs attention
-            </span>
-            {% else %}
-            <span class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Everything ok!
-            </span>
-            {% endif %}
-        </div>
-    </div>
-</div>
-
-<div class="bg-white rounded-lg shadow p-6 {% if total_warnings > 0 %}border-l-4 border-yellow-500{% else %}border-l-4 border-green-500{% endif %} hover:shadow-lg transition-all duration-300">
-    <div class="flex flex-col">
-        <div class="flex items-center justify-between mb-2">
-            <h3 class="text-sm font-medium text-gray-600 flex items-center">
+        <div class="bg-white rounded-lg shadow p-6 {% if total_warnings > 0 %}border-l-4 border-yellow-500{% else %}border-l-4 border-green-500{% endif %}">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-sm font-medium text-gray-600 flex items-center">
+                    {% if total_warnings > 0 %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {% endif %}
+                    Avisos 24h
+                </h3>
+                <span class="text-xs font-medium px-2 py-1 rounded-full {% if total_warnings > 0 %}bg-yellow-100 text-yellow-800{% else %}bg-green-100 text-green-800{% endif %}">
+                    {% if total_warnings > 0 %}Atenção{% else %}Estável{% endif %}
+                </span>
+            </div>
+            <p class="text-3xl font-bold {% if total_warnings > 0 %}text-yellow-600{% else %}text-green-600{% endif %}">{{ total_warnings }}</p>
+            <p class="text-xs text-gray-500 mt-2">
                 {% if total_warnings > 0 %}
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+                <span class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Revisar
+                </span>
                 {% else %}
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <span class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    OK
+                </span>
                 {% endif %}
-                Warnings in 24 Hours
-            </h3>
-            <span class="{% if total_warnings > 0 %}bg-yellow-100 text-yellow-800{% else %}bg-green-100 text-green-800{% endif %} text-xs px-2 py-1 rounded-full font-medium">
-                {% if total_warnings > 0 %}Attention{% else %}Stable{% endif %}
-            </span>
-        </div>
-        <p class="text-3xl font-bold {% if total_warnings > 0 %}text-yellow-600{% else %}text-green-600{% endif %}">{{total_warnings}}</p>
-        <div class="mt-2 text-xs text-gray-500">
-            {% if total_warnings > 0 %}
-            <span class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Review recommended
-            </span>
-            {% else %}
-            <span class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Everything ok!
-            </span>
-            {% endif %}
+            </p>
         </div>
     </div>
-</div>
 
-</div>
-
-<div class="bg-white rounded-lg shadow overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-        <div>
-            <h2 class="text-lg font-semibold text-gray-900">Logs Recentes</h2>
-            <p class="text-sm text-gray-500">Página: <span id="actualPage">{{ request.args.get('page',0)|int }}</span></p>
+    <!-- Tabela de Logs -->
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Logs Recentes</h2>
+                <p class="text-sm text-gray-500">Página: <span id="actualPage">{{ request.args.get('page',0)|int }}</span></p>
+            </div>
         </div>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200" id="table-logs">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nível</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fonte</th>
-
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mensagem</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Log</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for key in logs.keys() %}
-                    {% for row in logs[key] %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timestamp</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nível</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fonte</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mensagem</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Log</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for key, rows in logs.items() %}
+                        {% for row in rows %}
                         <tr class="hover:bg-gray-50">
-
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row[1] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row[2] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row[3] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row[4] }}</td>
-
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ key }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ row[1] }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ row[2] }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ row[3] }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ row[4] }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ key }}</td>
                         </tr>
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div id="loc-buttons" class="flex justify-center items-center py-4 bg-gray-50 border-t border-gray-200">
+    <!-- Paginação -->
+    <div class="flex justify-center items-center py-4">
         {% if request.args.get('page',0)|int > 0 %}
-        <button id="next-button" class="bg-white border border-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors mr-2" onclick="gotoPrevPage()">
+        <button onclick="gotoPrevPage()" class="bg-white border border-gray-300 text-gray-700 font-medium px-4 py-2 rounded-md hover:bg-gray-50 mr-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
         </button>
         {% endif %}
-        {% if has_next_page|default(false) %}
-        <button id="prev-button" class="bg-white border border-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors" onclick="gotoNextPage()">
+        {% if has_next_page %}
+        <button onclick="gotoNextPage()" class="bg-white border border-gray-300 text-gray-700 font-medium px-4 py-2 rounded-md hover:bg-gray-50">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
         </button>
         {% endif %}
     </div>
+
 </div>
 {% endblock %}

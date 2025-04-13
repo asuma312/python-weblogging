@@ -67,14 +67,14 @@ def dashboard():
     data_start = args.get("data_start")
     if data_start:
         try:
-            data_start = datetime.strptime(data_start, '%Y-%m-%d %H:%M:%S')
+            data_start = datetime.strptime(data_start, '%Y-%m-%d %H:%M')
         except ValueError:
             return jsonify({'status':'error','message':'data_start must be a datetime'}),400
 
     data_end = args.get("data_end")
     if data_end:
         try:
-            data_end = datetime.strptime(data_end, '%Y-%m-%d %H:%M:%S')
+            data_end = datetime.strptime(data_end, '%Y-%m-%d %H:%M')
         except ValueError:
             return jsonify({'status':'error','message':'data_end must be a datetime'}),400
 
@@ -182,9 +182,15 @@ def dashboard():
     total_pages = int(total_log / limit)
 
     has_next_page = int(page) < total_pages
-    return render_template('main/dashboard.html',database_logs=database_logs,logs=logs,
-                           selected_log = selected_log, total_log=total_log, total_errors=total_errors,
-                           total_warnings=total_warnings, has_next_page=has_next_page)
+    return render_template('main/dashboard.html',
+                           database_logs=database_logs,
+                           logs=logs,
+                           selected_log=selected_log,
+                           total_log=total_log,
+                           total_errors=total_errors,
+                           total_warnings=total_warnings,
+                           has_next_page=has_next_page,
+                           )
 
 @main_bp.route("/logout")
 @frontend_login

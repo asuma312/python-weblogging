@@ -10,8 +10,9 @@ from pyweblog.SDK_WS.main import setup_ws_logger
 
 logger = setup_ws_logger(
     name="exemplo_app_ws",
-    username="test2",
-    password="test",
+    log_name='test',
+    username="test@test.com",
+    password="123",
     level=logging.DEBUG
 )
 if __name__ == '__main__':

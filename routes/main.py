@@ -1,5 +1,12 @@
+import os
 from flask import *
 from utils.decorators import frontend_login
+from utils.path import get_user_path
+from models.dataclasses.logtypes import LOGTYPES
+from datetime import datetime
+from models.sql.setup import setup_database
+
+import threading
 main_bp = Blueprint('main', __name__, url_prefix='/')
 
 @main_bp.route('/')
@@ -17,4 +24,109 @@ def login():
 @main_bp.route("/dashboard")
 @frontend_login
 def dashboard():
-    return jsonify(logged='voce ta logado')
+    user = g.user
+    user_path = get_user_path(user)
+    database_logs = [
+        db.split("log_")[-1].split(".sqlite")[0]
+        for db in os.listdir(user_path) if db.endswith('.sqlite')
+    ]
+
+    args = request.args
+    selected_log = args.get("log", 'all')
+    page = args.get("page",0)
+
+    limit = int(current_app.config['FRONTEND_LOGS_PER_PAGE'])
+    offset = int(page) * limit
+
+
+    log_types =  args.get("types", 'all').split(",")
+    LOGTYPES_VAL = [log.value for log in LOGTYPES]
+    print(log_types)
+
+    if any(log not in LOGTYPES_VAL for log in log_types):
+        return jsonify({'status':'error','message':'log type is invalid'}),400
+    if log_types == []:
+        log_types = [LOGTYPES.ALL]
+
+
+    function_name = args.get("function_name")
+    if function_name:
+        if not isinstance(function_name, str):
+            return jsonify({'status':'error','message':'function_name must be a string'}),400
+
+    data_start = args.get("data_start")
+    if data_start:
+        try:
+            data_start = datetime.strptime(data_start, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return jsonify({'status':'error','message':'data_start must be a datetime'}),400
+
+    data_end = args.get("data_end")
+    if data_end:
+        try:
+            data_end = datetime.strptime(data_end, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return jsonify({'status':'error','message':'data_end must be a datetime'}),400
+
+    query ="""
+    SELECT data, type, function, message FROM logs
+    WHERE 1>0{and_where_clausules}
+    ORDER BY id ASC
+    LIMIT ? 
+    OFFSET ?
+    """
+    params = []
+    and_clausules = ""
+
+    database_to_read = database_logs
+    if selected_log != 'all':
+        database_to_read = [
+            db for db in database_logs if db == selected_log
+        ]
+    rows_per_db = int(limit/len(database_to_read) if len(database_to_read) > 0 else limit)
+    rows_per_db = rows_per_db if rows_per_db > 0 else 1
+
+    if LOGTYPES.ALL not in log_types:
+        if len(log_types) == 0:
+            pass
+        elif len(log_types) == 1:
+            and_clausule = " AND type = ?"
+            and_clausules += and_clausule
+            params.append(log_types[0].upper())
+        elif len(log_types) > 1:
+            and_clausule = " AND TYPE = ?"
+            and_clausules += and_clausule
+            params.append(log_types[0].upper())
+            for _type in log_types[1:]:
+                and_clausule = " OR type = ?"
+                and_clausules += and_clausule
+                params.append(_type.upper())
+
+    if function_name:
+        and_clausule = " AND function = ?"
+        and_clausules += and_clausule
+        params.append(function_name)
+
+    if data_start:
+        and_clausule = " AND date >= ?"
+        and_clausules += and_clausule
+        params.append(data_start)
+
+    if data_end:
+        and_clausule = " AND date <= ?"
+        and_clausules += and_clausule
+        params.append(data_end)
+
+    formated_query = query.format(and_where_clausules=and_clausules)
+    params.extend([rows_per_db, offset])
+    logs = {}
+
+    for db in database_to_read:
+        conn = setup_database(user,db)
+        cursor = conn.cursor()
+        cursor.execute(formated_query, params)
+        rows = [row for row in cursor.fetchall()]
+        logs[db] = rows
+        cursor.close()
+        conn.close()
+    return render_template('dashboard.html',database_logs=database_logs,logs=logs, selected_log = selected_log)

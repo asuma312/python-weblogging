@@ -16,6 +16,9 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
 
+    for key in os.environ.keys():
+        app.config[key] = os.environ[key]
+
     #import models for sqlalchemy
     from models.sql.user import User
 

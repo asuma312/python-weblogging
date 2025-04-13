@@ -115,10 +115,20 @@ def register_logs_events(socketio):
         and_clausules = ''
         params = []
         if LOGTYPES.ALL not in log_types:
-            for _type in log_types:
+            if len(log_types) == 0:
+                pass
+            elif len(log_types) == 1:
                 and_clausule = " AND type = ?"
                 and_clausules += and_clausule
-                params.append(_type.upper())
+                params.append(log_types[0].upper())
+            elif len(log_types) > 1:
+                and_clausule = " AND TYPE = ?"
+                and_clausules += and_clausule
+                params.append(log_types[0].upper())
+                for _type in log_types[1:]:
+                    and_clausule = " OR type = ?"
+                    and_clausules += and_clausule
+                    params.append(_type.upper())
 
         if function_name:
             and_clausule = " AND function = ?"

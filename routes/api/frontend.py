@@ -5,6 +5,7 @@ from models.sql.email_config import EmailToContact
 from models import db
 import os
 from models.dataclasses.logtypes import LOGTYPES
+from app import socketio
 
 
 frontendapi_bp = Blueprint('frontend', __name__)
@@ -24,7 +25,6 @@ def delete_logdb():
         return jsonify({'status':'error','message':'log_name must be less than 50 characters'}),400
     user_path = get_user_path(user)
     db = os.path.join(user_path, f"log_{log_name}.sqlite")
-    print(db)
     if not os.path.exists(db):
         return jsonify({'status':'error','message':'log_name not found'}),400
     try:
@@ -148,3 +148,6 @@ def get_uh():
 @frontend_login
 def test_not():
     user = g.user
+    current_app.config['socketio'].notify_user(user.userhash, "SEU APP CAIU CUIDADO!!", 'red')
+    return jsonify({'status':'success','message':'Notificação enviada'}),200
+

@@ -41,6 +41,7 @@ def create_app():
     from routes.api.frontend import frontendapi_bp
 
     app.register_blueprint(main_bp)
+    app.config['socketio'] = socketio
 
     app.register_blueprint(logs_bp, url_prefix='/api/v1/logs')
     app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')

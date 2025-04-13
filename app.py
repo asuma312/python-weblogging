@@ -20,7 +20,6 @@ def create_app():
         app.config[key] = os.environ[key]
 
     #import models for sqlalchemy
-    from models.sql.user import User
 
     with app.app_context():
         db.init_app(app)
@@ -36,8 +35,8 @@ def create_app():
     register_logs_events(socketio)
     register_auth_events(socketio)
 
-    from routes.logs import logs_bp
-    from routes.auth import auth_bp
+    from routes.api.logs import logs_bp
+    from routes.api.auth import auth_bp
     from routes.main import main_bp
 
     app.register_blueprint(main_bp)

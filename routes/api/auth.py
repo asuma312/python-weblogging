@@ -201,7 +201,7 @@ def login():
     session['uh'] = user.userhash
     return jsonify({"token": user.token}), 200
 
-@auth_bp.route("/logout",methods=['POST'])
+@auth_bp.route("/logout",methods=['POST', 'GET'])
 def logout():
     session.clear()
     return jsonify({"message": "Logout successful"}), 200

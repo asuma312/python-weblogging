@@ -3,7 +3,7 @@ from flask import *
 from utils.decorators import frontend_login
 from utils.path import get_user_path
 from models.dataclasses.logtypes import LOGTYPES
-from datetime import datetime
+from datetime import datetime, timedelta
 from models.sql.setup import setup_database
 
 import threading
@@ -11,25 +11,35 @@ main_bp = Blueprint('main', __name__, url_prefix='/')
 
 @main_bp.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('landing/index.html')
 
 @main_bp.route("/register")
 def register():
-    return render_template("register.html")
+    return render_template("landing/register.html")
 
 @main_bp.route("/login")
 def login():
-    return render_template("login.html")
+    return render_template("landing/login.html")
 
 @main_bp.route("/dashboard")
 @frontend_login
 def dashboard():
     user = g.user
     user_path = get_user_path(user)
+
     database_logs = [
         db.split("log_")[-1].split(".sqlite")[0]
         for db in os.listdir(user_path) if db.endswith('.sqlite')
     ]
+    total_log = 0
+    total_errors = 0
+    total_warnings = 0
+    error_types = [
+        LOGTYPES.ERROR.value.upper(),
+        LOGTYPES.CRITICAL.value.upper(),
+        LOGTYPES.FAILURE.value.upper()
+    ]
+
 
     args = request.args
     selected_log = args.get("log", 'all')
@@ -68,13 +78,15 @@ def dashboard():
         except ValueError:
             return jsonify({'status':'error','message':'data_end must be a datetime'}),400
 
-    query ="""
-    SELECT data, type, function, message FROM logs
-    WHERE 1>0{and_where_clausules}
-    ORDER BY id ASC
-    LIMIT ? 
+    query = """
+    SELECT id, data, type, function, message
+    FROM logs
+    WHERE 1=1 {and_where_clausules}
+    ORDER BY id DESC
+    LIMIT ?
     OFFSET ?
     """
+
     params = []
     and_clausules = ""
 
@@ -87,25 +99,26 @@ def dashboard():
     rows_per_db = rows_per_db if rows_per_db > 0 else 1
 
     if LOGTYPES.ALL not in log_types:
-        if len(log_types) == 0:
+        if len(log_types) == 0 or 'all' in log_types:
             pass
         elif len(log_types) == 1:
             and_clausule = " AND type = ?"
             and_clausules += and_clausule
             params.append(log_types[0].upper())
         elif len(log_types) > 1:
-            and_clausule = " AND TYPE = ?"
+            and_clausule = " AND (type = ?"
             and_clausules += and_clausule
             params.append(log_types[0].upper())
             for _type in log_types[1:]:
                 and_clausule = " OR type = ?"
                 and_clausules += and_clausule
                 params.append(_type.upper())
+            and_clausules += ")"
 
     if function_name:
-        and_clausule = " AND function = ?"
+        and_clausule = " AND function LIKE ?"
         and_clausules += and_clausule
-        params.append(function_name)
+        params.append(f"%{function_name}%")
 
     if data_start:
         and_clausule = " AND date >= ?"
@@ -126,7 +139,56 @@ def dashboard():
         cursor = conn.cursor()
         cursor.execute(formated_query, params)
         rows = [row for row in cursor.fetchall()]
+        last_row = rows[0]
+        if last_row:
+            total_log += last_row[0]
+
+
+        error_placeholders = ','.join(['?'] * len(error_types))
+        errors_query = """SELECT COUNT(type) as qtd_erros FROM logs WHERE type IN ({placeholders}) and data >= ? and data <= ?"""
+        errors_query = errors_query.format(placeholders=error_placeholders)
+        errors_params = error_types
+
+        error_data_end = datetime.now()
+        error_data_start = error_data_end - timedelta(days=1)
+
+        errors_params.extend([error_data_start, error_data_end])
+        errors = cursor.execute(errors_query, errors_params)
+        errors = errors.fetchone()[0]
+        total_errors += errors
+
+
+        warnings_query = """SELECT COUNT(type) as qtd_warnings FROM logs WHERE type = ? and data >= ? and data <= ?"""
+        warnings_query = warnings_query.format(placeholders=error_placeholders)
+        warnings_params = [LOGTYPES.WARNING.value.upper()]
+        warnings_params.extend([error_data_start, error_data_end])
+        warnings = cursor.execute(warnings_query, warnings_params)
+        warnings = warnings.fetchone()[0]
+        total_warnings += warnings
+
         logs[db] = rows
+
+
         cursor.close()
         conn.close()
-    return render_template('dashboard.html',database_logs=database_logs,logs=logs, selected_log = selected_log)
+    return render_template('main/dashboard.html',database_logs=database_logs,logs=logs,
+                           selected_log = selected_log, total_log=total_log, total_errors=total_errors,
+                           total_warnings=total_warnings)
+
+@main_bp.route("/logout")
+@frontend_login
+def logout():
+    session.clear()
+    return redirect(url_for('main.login'))
+
+
+@main_bp.route("/settings")
+@frontend_login
+def settings():
+    user = g.user
+    user_path = get_user_path(user)
+    database_logs = [
+        db.split("log_")[-1].split(".sqlite")[0]
+        for db in os.listdir(user_path) if db.endswith('.sqlite')
+    ]
+    return render_template('main/settings.html',database_logs=database_logs)

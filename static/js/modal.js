@@ -252,6 +252,7 @@ class ModalSystem {
       container: modalContainer,
       options: modalOptions
     };
+    console.log('Modal criado:', this.activeModal);
 
     return this;
   }
@@ -279,13 +280,13 @@ class ModalSystem {
     // Animar saída
     overlay.classList.remove('visible');
     container.classList.remove('visible');
+  this.activeModal = null;
 
     // Remover após a animação
     setTimeout(() => {
       if (document.body.contains(overlay)) {
         document.body.removeChild(overlay);
       }
-      this.activeModal = null;
     }, options.animation ? 300 : 0);
 
     return this;
@@ -299,7 +300,7 @@ const modalSystem = new ModalSystem();
  * Funções helper para tipos comuns de modais
  */
 
-function showErrorModal(message, title = 'Erro') {
+function showErrorModal(message, title = 'Error') {
   const content = document.createElement('div');
 
   const messageEl = document.createElement('p');
@@ -325,7 +326,7 @@ function showErrorModal(message, title = 'Erro') {
   }).show();
 }
 
-function showSuccessModal(message, title = 'Sucesso') {
+function showSuccessModal(message, title = 'Success') {
   const content = document.createElement('div');
 
   const messageEl = document.createElement('p');
@@ -351,7 +352,7 @@ function showSuccessModal(message, title = 'Sucesso') {
   }).show();
 }
 
-function showConfirmModal(message, onConfirm, onCancel, title = 'Confirmação') {
+function showConfirmModal(message, onConfirm, onCancel, title = 'Confirmation') {
   const content = document.createElement('div');
 
   const messageEl = document.createElement('p');
@@ -363,7 +364,7 @@ function showConfirmModal(message, onConfirm, onCancel, title = 'Confirmação')
 
   const cancelButton = document.createElement('button');
   cancelButton.classList.add('modal-button');
-  cancelButton.textContent = 'Cancelar';
+  cancelButton.textContent = 'Cancel';
   cancelButton.style.backgroundColor = '#e5e7eb';
   cancelButton.style.color = '#374151';
   cancelButton.addEventListener('click', () => {
@@ -373,7 +374,7 @@ function showConfirmModal(message, onConfirm, onCancel, title = 'Confirmação')
 
   const confirmButton = document.createElement('button');
   confirmButton.classList.add('modal-button', 'primary');
-  confirmButton.textContent = 'Confirmar';
+  confirmButton.textContent = 'Confirm';
   confirmButton.addEventListener('click', () => {
     modalSystem.close();
     if (typeof onConfirm === 'function') onConfirm();

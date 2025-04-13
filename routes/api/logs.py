@@ -3,7 +3,7 @@ from utils.log_utils import insert_log
 from utils.path import get_user_path
 from datetime import datetime
 from models.dataclasses.logtypes import LOGTYPES
-from utils.decorators import verify_token
+from utils.decorators import verify_token, frontend_login
 from models.sql.setup import setup_database
 import os
 
@@ -23,7 +23,7 @@ def insert_log_to_backend():
       - name: body
         in: body
         required: true
-        description: "The logstring needs to be in this specific pattern (date time - type [parent:parent - function name] - message), its better to use the SDK client for this"
+        description: "The logstring needs to be in this specific pattern (date time - type [parent:parent - function name] - message), it's better to use the SDK client for this"
         schema:
           type: object
           properties:
@@ -237,25 +237,27 @@ def select_logs():
     and_clausules = ''
     params = []
     if LOGTYPES.ALL not in log_types:
-        if len(log_types) == 0:
+        if len(log_types) == 0 or 'all' in log_types:
             pass
         elif len(log_types) == 1:
             and_clausule = " AND type = ?"
             and_clausules += and_clausule
             params.append(log_types[0].upper())
         elif len(log_types) > 1:
-            and_clausule = " AND TYPE = ?"
+            and_clausule = " AND (type = ?"
             and_clausules += and_clausule
             params.append(log_types[0].upper())
             for _type in log_types[1:]:
                 and_clausule = " OR type = ?"
                 and_clausules += and_clausule
                 params.append(_type.upper())
+            and_clausules += ")"
 
     if function_name:
-        and_clausule = " AND function = ?"
+        and_clausule = " AND function LIKE ?"
         and_clausules += and_clausule
-        params.append(function_name)
+        params.append(f"%{function_name}%")
+
 
     if data_start:
         and_clausule = " AND date >= ?"
@@ -354,3 +356,25 @@ def get_specific_log():
     json = [dict(zip(columns, row)) for row in rows]
     return jsonify({"status": "success", "data": json[0]}), 200
 
+@logs_bp.route("/delete_logdb",methods=['DELETE'])
+@frontend_login
+def delete_logdb():
+    user = g.user
+    data = request.get_json()
+    log_name = data.get("log_name", 'default')
+    if not log_name:
+        return jsonify({'status':'error','message':'log_name is required'}),400
+    if not isinstance(log_name, str):
+        return jsonify({'status':'error','message':'log_name must be a string'}),400
+    if len(log_name) > 50:
+        return jsonify({'status':'error','message':'log_name must be less than 50 characters'}),400
+    user_path = get_user_path(user)
+    db = os.path.join(user_path, f"log_{log_name}.sqlite")
+    print(db)
+    if not os.path.exists(db):
+        return jsonify({'status':'error','message':'log_name not found'}),400
+    try:
+        os.remove(db)
+    except Exception as e:
+        return jsonify({'status':'error','message':str(e)}),400
+    return jsonify({'status':'success','message':'log_name deleted'}),200

@@ -1,0 +1,56 @@
+{% extends "base/base.html" %}
+{% block content %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('flasgger.static', filename='swagger-ui.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('flasgger.static', filename='favicon-32x32.png') }}" sizes="32x32" />
+    <link rel="icon" type="image/png" href="{{ url_for('flasgger.static', filename='favicon-16x16.png') }}" sizes="16x16" />
+    <style>
+        /* Preserve Swagger UI styles while enhancing the layout */
+        #swagger-ui {
+            margin: 0;
+            padding: 1.25rem;
+            background-color: white;
+        }
+        .swagger-ui .topbar {
+            display: none;
+        }
+    </style>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow">
+            <div id="swagger-ui"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-8">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">
+                Powered by Swagger UI
+            </p>
+        </div>
+    </footer>
+
+    <!-- Swagger Scripts -->
+    <script src="{{ url_for('flasgger.static', filename='swagger-ui-bundle.js') }}"></script>
+    <script src="{{ url_for('flasgger.static', filename='swagger-ui-standalone-preset.js') }}"></script>
+    <script>
+        window.onload = function() {
+            const ui = SwaggerUIBundle({
+                url: "{{ specs_url }}",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "BaseLayout",
+                docExpansion: "none",
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch']
+            });
+            window.ui = ui;
+        }
+    </script>
+{% endblock %}

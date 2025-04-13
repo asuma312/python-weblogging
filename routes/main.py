@@ -204,3 +204,7 @@ def settings():
         for db in os.listdir(user_path) if db.endswith('.sqlite')
     ]
     return render_template('main/settings.html',database_logs=database_logs,emails=user_emails)
+
+@main_bp.route("/api-docs")
+def api_docs():
+    return render_template('swagger.html', specs_url='/apispec_1.json')

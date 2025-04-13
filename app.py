@@ -46,8 +46,42 @@ def create_app():
     app.register_blueprint(logs_bp, url_prefix='/api/v1/logs')
     app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')
     app.register_blueprint(frontendapi_bp, url_prefix='/api/v1/frontend')
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": "apispec_1",
+                "route": "/apispec_1.json",
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True,
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/docs/"
+    }
 
-    swagger = Swagger(app)
+    swagger_template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "PyWebLog API",
+            "description": "API para PyWebLog.",
+            "contact": {
+                "email": "asuma312@gmail.com"
+            },
+            "version": "1.0"
+        },
+        "schemes": [
+            "http",
+            "https"
+        ],
+        "uiConfig": {
+            "docExpansion": "none",
+            "deepLinking": False
+        }
+    }
+
+    swagger = Swagger(app, config=swagger_config, template=swagger_template)
 
 
     @app.route("/debug")

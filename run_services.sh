@@ -11,7 +11,7 @@ echo "Iniciando serviços PyWebLog em segundo plano..."
 
 # Inicia o controlador de logs
 echo "Iniciando serviço de controlador de logs..."
-nohup python services/log_controller/app.py > "$LOG_CONTROLLER_LOG" 2>&1 &
+cd "$CURRENT_DIR" && PYTHONPATH="$CURRENT_DIR" nohup python services/log_controller/app.py > "$LOG_CONTROLLER_LOG" 2>&1 &
 LOG_CONTROLLER_PID=$!
 echo "Controlador de logs iniciado com PID: $LOG_CONTROLLER_PID"
 

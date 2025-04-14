@@ -1,6 +1,7 @@
 import re
 from models.sql.setup import setup_database
 from models.sql.user import User
+from flask import current_app
 
 
 def parse_log(log:str):
@@ -19,6 +20,10 @@ def insert_log(log: str, user: User, log_name:str='default'):
     cursor = conn.cursor()
     cursor.execute("INSERT INTO logs (data, type, function, message) VALUES (?, ?, ?, ?)",
                    (date_str, log_type, function, message))
+    if log_type in ['ERROR']:
+        socket_ioobj = current_app.config['socketio']
+        socket_ioobj.notify_user(user.userhash, message, date_str, log_name, 'red')
+        print("sent message")
     conn.commit()
     cursor.close()
     conn.close()

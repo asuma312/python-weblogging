@@ -7,8 +7,24 @@ import time
 cache_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'cache')
 os.makedirs(cache_root, exist_ok=True)
 
+def setup_db(cache_db_path:str)->sqlite3.Connection:
+    conn = sqlite3.connect(cache_db_path)
+    cursor = conn.cursor()
+    cursor.execute('''
+                        CREATE TABLE IF NOT EXISTS notifications (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            message TEXT,
+                            priority TEXT,
+                            log_name TEXT,
+                            read BOOLEAN DEFAULT 0,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    ''')
+    cursor.close()
+    conn.commit()
+    return conn
 
-import json
+
 def register_notification_events(socketio):
     @socketio.on('connect')
     def handle_connect():
@@ -22,45 +38,37 @@ def register_notification_events(socketio):
             cache_user_path = os.path.join(cache_root, uh)
             os.makedirs(cache_user_path, exist_ok=True)
             cache_db_path = os.path.join(cache_user_path, 'cache.sqlite3')
-            with sqlite3.connect(cache_db_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS notifications (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        message TEXT,
-                        priority TEXT,
-                        read BOOLEAN DEFAULT 0,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                ''')
-                conn.commit()
-                two_days_ago = datetime.now() - timedelta(days=2)
-                two_days_ago_str = two_days_ago.strftime('%Y-%m-%d %H:%M:%S')
-
-                data = cursor.execute('''
-                    SELECT * FROM notifications
-                    WHERE created_at >= ?
-                    ORDER BY
-                        read ASC,
-                        CASE priority
-                            WHEN 'red' THEN 1
-                            WHEN 'yellow' THEN 2
-                            WHEN 'green' THEN 3
-                            ELSE 4
-                        END,
-                        created_at DESC
-                    LIMIT 50
-                ''', (two_days_ago_str,)).fetchall()
-                for row in data:
-                    id = row[0]
-                    message = row[1]
-                    priority = row[2]
-                    read = row[3]
-                    date = row[4]
-                    if read:
-                        emit('silent_notification', {'message': message, 'priority': 'grey', "date": date, "read": read}, broadcast=True)
-                    else:
-                        emit('notification_response', {'message': message,'priority': priority,  "date": date, 'id': id, "read": read}, broadcast=True)
+            two_days_ago = datetime.now() - timedelta(days=2)
+            two_days_ago_str = two_days_ago.strftime('%Y-%m-%d %H:%M:%S')
+            conn = setup_db(cache_db_path)
+            cursor = conn.cursor()
+            data = cursor.execute('''
+                SELECT * FROM notifications
+                WHERE created_at >= ?
+                ORDER BY
+                    read DESC,
+                    CASE priority
+                        WHEN 'red' THEN 1
+                        WHEN 'yellow' THEN 2
+                        WHEN 'green' THEN 3
+                        ELSE 4
+                    END,
+                    created_at ASC
+                LIMIT 50
+            ''', (two_days_ago_str,)).fetchall()
+            for row in data:
+                id = row[0]
+                message = row[1]
+                priority = row[2]
+                log_name = row[3]
+                read = row[4]
+                date = row[5]
+                if read:
+                    emit('silent_notification', {'message': message, 'priority': 'grey', "date": date, "read": read, "log_name":log_name}, broadcast=True)
+                else:
+                    emit('notification_response', {'message': message,'priority': priority,  "date": date, 'id': id, "read": read, "log_name":log_name}, broadcast=True)
+            cursor.close()
+            conn.close()
             print(f"User joined room: {uh}")
         else:
             print("No userhash provided for room join.")
@@ -78,46 +86,35 @@ def register_notification_events(socketio):
                 cursor.execute('UPDATE notifications SET read = 1 WHERE id = ?', (message_id,))
             conn.commit()
 
-    @socketio.on('notification')
-    def handle_notification(data):
-        message = data.get('message')
-        emit('notification_response', {'message': f'Notificação recebida: {message}'}, broadcast=True)
 
-    def notify_user(uh, message, priority='green'):
+    def notify_user(uh, message,created_at, log_name, priority='green'):
         print(f"Notificando usuário {uh} com a mensagem: {message}")
         cache_user_path = os.path.join(cache_root, uh)
         os.makedirs(cache_user_path, exist_ok=True)
         cache_db_path = os.path.join(cache_user_path, 'cache.sqlite3')
 
-        conn = sqlite3.connect(cache_db_path)
+        conn = setup_db(cache_db_path)
         cursor = conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS notifications (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 message TEXT,
                 priority TEXT,
+                log_name TEXT,
                 read BOOLEAN DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP
             )
         ''')
         conn.commit()
-
         cursor.execute('''
-            INSERT INTO notifications (message, priority)
-            VALUES (?, ?)
-        ''', (message, priority))
-
-        id = cursor.lastrowid
-
-        cursor.execute('''
-            SELECT created_at, read FROM notifications WHERE id = ?
-        ''', (id,))
-        date, read = cursor.fetchone()
-
+            INSERT INTO notifications (message, priority, created_at, log_name)
+            VALUES (?, ?, ?, ?)
+        ''', (message, priority, created_at, log_name))
         conn.commit()
+        id = cursor.lastrowid
+        cursor.close()
         conn.close()
-
         socketio.emit('notification_response',
-                      {'message': message, 'priority': priority, "date": date, 'id': id, "read": read}, room=uh)
+                      {'message': message, 'priority': priority, "date": created_at, 'id': id, "read": False, "log_name":log_name}, room=uh)
     socketio.notify_user = notify_user
 

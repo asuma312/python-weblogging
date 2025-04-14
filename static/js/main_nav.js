@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
     }
 
-    const addNotificationMessage = (message, priority, date) => {
+    const addNotificationMessage = (message, priority, date, log_name) => {
+        date = date.split(',')[0];
         const noNotElem = document.getElementById("no-notifications");
         if (noNotElem) {
             noNotElem.remove();
@@ -51,9 +52,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const messageContainer = document.createElement('div');
         messageContainer.className = `p-4 border-b ${borderColor} ${bgColor} text-white`;
+
+        const messageTitle = document.createElement('strong');
+        messageTitle.innerHTML = "Log: " + log_name+ "<br/>";
+
         messageContainer.innerHTML = message;
+            messageContainer.insertBefore(messageTitle, messageContainer.firstChild);
+        messageContainer.style.cursor = "pointer";
+        messageContainer.dataset.date = date;
+        messageContainer.dataset.logName = log_name;
+        messageContainer.addEventListener('mouseenter', () => {
+            messageContainer.classList.add('hover:scale-105');
+        });
+        messageContainer.addEventListener('click', () => {
+            handleNotificationMessageClick(event);
+        });
         notificationContainer.insertBefore(messageContainer, notificationContainer.firstChild);
     };
+
+
+    function handleNotificationMessageClick(event) {
+        const messageContainer = event.currentTarget;
+        const date = messageContainer.dataset.date;
+        const logName = messageContainer.dataset.logName;
+        if (date) {
+            let beforeDate = new Date(date);
+            beforeDate.setMinutes(beforeDate.getMinutes() - 1);
+            beforeDate.setHours(beforeDate.getHours() - 3);
+            beforeDate = beforeDate.toISOString().slice(0, 19).replace('T', ' ').substring(0, 16);
+
+            let afterDate = new Date(date);
+            afterDate.setMinutes(afterDate.getMinutes() + 1);
+            afterDate.setHours(afterDate.getHours() - 3);
+            afterDate = afterDate.toISOString().slice(0, 19).replace('T', ' ').substring(0, 16);
+            let url = '/dashboard';
+            let args = {
+            data_start: beforeDate,
+            data_end: afterDate,
+            log: logName,
+            };
+            console.log(args);
+            let queryString = new URLSearchParams(args).toString();
+            url += '?' + queryString;
+            console.log(url);
+            window.location.href = url;
+
+        }
+    }
 
     const handleNotificationBtnClick = () => {
         notificationCount = 0;
@@ -101,11 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.on('notification_response', (data) => {
             notificationCount++;
             updateNotificationBadge();
-            addNotificationMessage(data.message, data.priority || 'green', data.date);
+            addNotificationMessage(data.message, data.priority || 'green', data.date, data.log_name);
             unreadMessages.push(data.id);
         });
         socket.on('silent_notification', (data) => {
-            addNotificationMessage(data.message, data.priority || 'green', data.date);
+            addNotificationMessage(data.message, data.priority || 'green', data.date, data.log_name);
         });
     };
 

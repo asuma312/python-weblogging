@@ -121,12 +121,12 @@ def dashboard():
         params.append(f"%{function_name}%")
 
     if data_start:
-        and_clausule = " AND date >= ?"
+        and_clausule = " AND data >= ?"
         and_clausules += and_clausule
         params.append(data_start)
 
     if data_end:
-        and_clausule = " AND date <= ?"
+        and_clausule = " AND data <= ?"
         and_clausules += and_clausule
         params.append(data_end)
 
@@ -145,7 +145,11 @@ def dashboard():
         count_logs_query = count_logs_query.replace("LIMIT ?", "LIMIT 1")
         count_logs_query = count_logs_query.replace("OFFSET ?", "OFFSET 0")
         count_logs_query = count_logs_query.replace("SELECT id, data, type, function, message", "SELECT id")
-        count_logs = cursor.execute(count_logs_query, count_logs_params).fetchone()[0]
+        count_logs = cursor.execute(count_logs_query, count_logs_params).fetchone()
+        if not count_logs:
+            count_logs = 0
+        else:
+            count_logs = count_logs[0]
         total_log += count_logs
 
 

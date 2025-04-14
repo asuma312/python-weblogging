@@ -15,10 +15,4 @@ logger = setup_ws_logger(
     level=logging.DEBUG
 )
 if __name__ == '__main__':
-    while True:
-        logger.debug("Isto é uma mensagem de debug via WebSocket")
-        logger.info("Aplicação iniciada via WebSocket")
-        logger.warning("Aviso: recurso está quase esgotado (WebSocket)")
-        logger.error("Erro ao processar arquivo (WebSocket)")
-
-
+    logger.error("Erro ao processar arquivo (WebSocket)")

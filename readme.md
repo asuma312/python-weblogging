@@ -49,6 +49,11 @@ LogSQL is a web application developed with Flask and Flask-SocketIO to manage lo
 - **models/**: Data models including the user definition and database configuration.
 - **utils/**: Helper functions for log manipulation and path management.
 
+## Python client
+You can find python client both in pypi: https://pypi.org/project/pythonweblog-client-ws/
+And in github repo: https://github.com/asuma312/pyweblog_client
+
+
 ## Final Considerations
 
 This project is suited for applications requiring centralized log management and robust authentication, integrating both synchronous (HTTP) and asynchronous (WebSocket) communication.

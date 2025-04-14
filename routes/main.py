@@ -113,14 +113,11 @@ def dashboard():
             and_clausules += and_clausule
             params.append(log_types[0].upper())
         elif len(log_types) > 1:
-            and_clausule = " AND (type = ?"
+            placeholders = ','.join(['?'] * len(log_types))
+            and_clausule = f" AND type IN ({placeholders})"
             and_clausules += and_clausule
-            params.append(log_types[0].upper())
-            for _type in log_types[1:]:
-                and_clausule = " OR type = ?"
-                and_clausules += and_clausule
+            for _type in log_types:
                 params.append(_type.upper())
-            and_clausules += ")"
 
     if function_name:
         and_clausule = " AND function LIKE ?"

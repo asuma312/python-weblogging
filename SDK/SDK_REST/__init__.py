@@ -1,1 +1,0 @@
-from SDK.SDK_REST.main import setup_rest_logger

@@ -140,21 +140,6 @@ def dashboard():
         cursor.execute(formated_query, params)
         rows = [row for row in cursor.fetchall()]
 
-        count_logs_query = formated_query
-        count_logs_params = params.copy()[:-2]
-        count_logs_query = count_logs_query.replace("LIMIT ?", "LIMIT 1")
-        count_logs_query = count_logs_query.replace("OFFSET ?", "OFFSET 0")
-        count_logs_query = count_logs_query.replace("SELECT id, data, type, function, message", "SELECT id")
-        count_logs = cursor.execute(count_logs_query, count_logs_params).fetchone()
-        if not count_logs:
-            count_logs = 0
-        else:
-            count_logs = count_logs[0]
-        total_log += count_logs
-
-
-
-
         error_placeholders = ','.join(['?'] * len(error_types))
         errors_query = """SELECT COUNT(type) as qtd_erros FROM logs WHERE type IN ({placeholders}) and data >= ? and data <= ?"""
         errors_query = errors_query.format(placeholders=error_placeholders)
@@ -178,6 +163,7 @@ def dashboard():
         total_warnings += warnings
 
         logs[db] = rows
+        total_log += len(rows)
 
 
         cursor.close()

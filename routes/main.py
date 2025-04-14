@@ -45,8 +45,7 @@ def dashboard():
     selected_log = args.get("log", 'all')
     page = args.get("page",0)
 
-    limit = int(current_app.config['FRONTEND_LOGS_PER_PAGE'])
-    offset = int(page) * limit
+
 
 
     log_types =  args.get("types", 'all').split(",")
@@ -102,8 +101,11 @@ def dashboard():
         database_to_read = [
             db for db in database_logs if db == selected_log
         ]
+    limit = int(current_app.config['FRONTEND_LOGS_PER_PAGE'])
+    offset = int(page) * limit
     rows_per_db = int(limit/len(database_to_read) if len(database_to_read) > 0 else limit)
     rows_per_db = rows_per_db if rows_per_db > 0 else 1
+    offset = offset - rows_per_db
 
     if LOGTYPES.ALL not in log_types:
         if len(log_types) == 0 or 'all' in log_types:

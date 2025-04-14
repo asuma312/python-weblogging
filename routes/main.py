@@ -105,8 +105,7 @@ def dashboard():
     offset = int(page) * limit
     rows_per_db = int(limit/len(database_to_read) if len(database_to_read) > 0 else limit)
     rows_per_db = rows_per_db if rows_per_db > 0 else 1
-    offset = offset - rows_per_db
-
+    offset = int(offset / rows_per_db)
     if LOGTYPES.ALL not in log_types:
         if len(log_types) == 0 or 'all' in log_types:
             pass

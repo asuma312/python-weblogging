@@ -87,6 +87,13 @@ def dashboard():
     OFFSET ?
     """
 
+    c_query = """
+    SELECT count(id) as total_logs
+    FROM logs
+    WHERE 1=1 {and_where_clausules}
+    ORDER BY id DESC
+    """
+
     params = []
     and_clausules = ""
 
@@ -140,6 +147,15 @@ def dashboard():
         cursor.execute(formated_query, params)
         rows = [row for row in cursor.fetchall()]
 
+        count_rows = cursor.execute(c_query, params[:-2])
+        count_rows = count_rows.fetchone()
+        if count_rows:
+            count_rows = count_rows[0]
+        else:
+            count_rows = 0
+        total_log += count_rows
+
+
         error_placeholders = ','.join(['?'] * len(error_types))
         errors_query = """SELECT COUNT(type) as qtd_erros FROM logs WHERE type IN ({placeholders}) and data >= ? and data <= ?"""
         errors_query = errors_query.format(placeholders=error_placeholders)
@@ -163,7 +179,6 @@ def dashboard():
         total_warnings += warnings
 
         logs[db] = rows
-        total_log += len(rows)
 
 
         cursor.close()

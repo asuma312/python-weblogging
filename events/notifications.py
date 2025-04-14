@@ -96,17 +96,6 @@ def register_notification_events(socketio):
         conn = setup_db(cache_db_path)
         cursor = conn.cursor()
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS notifications (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                message TEXT,
-                priority TEXT,
-                log_name TEXT,
-                read BOOLEAN DEFAULT 0,
-                created_at TIMESTAMP
-            )
-        ''')
-        conn.commit()
-        cursor.execute('''
             INSERT INTO notifications (message, priority, created_at, log_name)
             VALUES (?, ?, ?, ?)
         ''', (message, priority, created_at, log_name))

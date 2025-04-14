@@ -96,8 +96,11 @@ def dashboard():
     params = []
     and_clausules = ""
 
+
+    database_to_read = next((db for db in database_logs if selected_log == db), None)
     if not selected_log:
-        database_to_read = [database_logs[0]]
+        database_to_read = database_logs[0]
+
     limit = int(current_app.config['FRONTEND_LOGS_PER_PAGE'])
     offset = int(page) * limit
     if LOGTYPES.ALL not in log_types:
@@ -134,48 +137,47 @@ def dashboard():
     params.extend([limit, offset])
     logs = {}
 
-    for db in database_to_read:
-        conn = setup_database(user,db)
-        cursor = conn.cursor()
-        cursor.execute(formated_query, params)
-        rows = [row for row in cursor.fetchall()]
+    conn = setup_database(user,database_to_read)
+    cursor = conn.cursor()
+    cursor.execute(formated_query, params)
+    rows = [row for row in cursor.fetchall()]
 
-        count_rows = cursor.execute(formated_c_query, params[:-2])
-        count_rows = count_rows.fetchone()
-        if count_rows:
-            count_rows = count_rows[0]
-        else:
-            count_rows = 0
-        total_log += count_rows
-
-
-        error_placeholders = ','.join(['?'] * len(error_types))
-        errors_query = """SELECT COUNT(type) as qtd_erros FROM logs WHERE type IN ({placeholders}) and data >= ? and data <= ?"""
-        errors_query = errors_query.format(placeholders=error_placeholders)
-        errors_params = error_types
-
-        error_data_end = datetime.now()
-        error_data_start = error_data_end - timedelta(days=1)
-
-        errors_params.extend([error_data_start, error_data_end])
-        errors = cursor.execute(errors_query, errors_params)
-        errors = errors.fetchone()[0]
-        total_errors += errors
+    count_rows = cursor.execute(formated_c_query, params[:-2])
+    count_rows = count_rows.fetchone()
+    if count_rows:
+        count_rows = count_rows[0]
+    else:
+        count_rows = 0
+    total_log += count_rows
 
 
-        warnings_query = """SELECT COUNT(type) as qtd_warnings FROM logs WHERE type = ? and data >= ? and data <= ?"""
-        warnings_query = warnings_query.format(placeholders=error_placeholders)
-        warnings_params = [LOGTYPES.WARNING.value.upper()]
-        warnings_params.extend([error_data_start, error_data_end])
-        warnings = cursor.execute(warnings_query, warnings_params)
-        warnings = warnings.fetchone()[0]
-        total_warnings += warnings
+    error_placeholders = ','.join(['?'] * len(error_types))
+    errors_query = """SELECT COUNT(type) as qtd_erros FROM logs WHERE type IN ({placeholders}) and data >= ? and data <= ?"""
+    errors_query = errors_query.format(placeholders=error_placeholders)
+    errors_params = error_types
 
-        logs[db] = rows
+    error_data_end = datetime.now()
+    error_data_start = error_data_end - timedelta(days=1)
+
+    errors_params.extend([error_data_start, error_data_end])
+    errors = cursor.execute(errors_query, errors_params)
+    errors = errors.fetchone()[0]
+    total_errors += errors
 
 
-        cursor.close()
-        conn.close()
+    warnings_query = """SELECT COUNT(type) as qtd_warnings FROM logs WHERE type = ? and data >= ? and data <= ?"""
+    warnings_query = warnings_query.format(placeholders=error_placeholders)
+    warnings_params = [LOGTYPES.WARNING.value.upper()]
+    warnings_params.extend([error_data_start, error_data_end])
+    warnings = cursor.execute(warnings_query, warnings_params)
+    warnings = warnings.fetchone()[0]
+    total_warnings += warnings
+
+    logs[database_to_read] = rows
+
+
+    cursor.close()
+    conn.close()
 
     total_pages = int(total_log / limit)
 

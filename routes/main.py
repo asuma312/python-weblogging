@@ -97,7 +97,7 @@ def dashboard():
     and_clausules = ""
 
     if not selected_log:
-        database_to_read = database_logs[0]
+        database_to_read = [database_logs[0]]
     limit = int(current_app.config['FRONTEND_LOGS_PER_PAGE'])
     offset = int(page) * limit
     if LOGTYPES.ALL not in log_types:

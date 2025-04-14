@@ -138,6 +138,7 @@ def dashboard():
         params.append(data_end)
 
     formated_query = query.format(and_where_clausules=and_clausules)
+    formated_c_query = c_query.format(and_where_clausules=and_clausules)
     params.extend([rows_per_db, offset])
     logs = {}
 
@@ -147,7 +148,7 @@ def dashboard():
         cursor.execute(formated_query, params)
         rows = [row for row in cursor.fetchall()]
 
-        count_rows = cursor.execute(c_query, params[:-2])
+        count_rows = cursor.execute(formated_c_query, params[:-2])
         count_rows = count_rows.fetchone()
         if count_rows:
             count_rows = count_rows[0]

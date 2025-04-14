@@ -11,7 +11,7 @@ socketio = SocketIO()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SQLITE_DBPATH'] = app.root_path + os.getenv('USERS_LOGDB_PATH')
+    app.config['SQLITE_DBPATH'] = os.getenv('USERS_LOGDB_PATH')
     app.config['JWT_SECRET_TOKEN'] = os.getenv('JWT_SECRET_TOKEN')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default_secret_key')
@@ -26,14 +26,6 @@ def create_app():
             os.makedirs(app.config['SQLITE_DBPATH'])
 
     socketio.init_app(app, cors_allowed_origins="*")
-    
-    from events.logs import register_logs_events
-    from events.auth import register_auth_events
-    from events.notifications import register_notification_events
-    
-    register_logs_events(socketio)
-    register_auth_events(socketio)
-    register_notification_events(socketio)
 
     from routes.api.logs import logs_bp
     from routes.api.auth import auth_bp

@@ -9,7 +9,6 @@
         <div class="flex flex-col sm:flex-row items-center justify-between">
             <h3 class="text-xl font-bold text-gray-800 mb-4 sm:mb-0">Select a Log</h3>
             <select onchange="selectLog(this)" class="w-full sm:w-auto bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
-                <option value="all">All</option>
                 {% for option in database_logs %}
                 <option value="{{ option }}" {% if option == selected_log %}selected{% endif %}>{{ option }}</option>
                 {% endfor %}

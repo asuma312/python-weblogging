@@ -42,7 +42,7 @@ def dashboard():
 
 
     args = request.args
-    selected_log = args.get("log", 'all')
+    selected_log = args.get("log")
     page = args.get("page",0)
 
 
@@ -96,11 +96,8 @@ def dashboard():
     params = []
     and_clausules = ""
 
-    database_to_read = database_logs
-    if selected_log != 'all':
-        database_to_read = [
-            db for db in database_logs if db == selected_log
-        ]
+    if not selected_log:
+        database_to_read = database_logs[0]
     limit = int(current_app.config['FRONTEND_LOGS_PER_PAGE'])
     offset = int(page) * limit
     if LOGTYPES.ALL not in log_types:

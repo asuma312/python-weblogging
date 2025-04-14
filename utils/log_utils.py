@@ -20,7 +20,7 @@ def insert_log(log: str, user: User, log_name:str='default'):
     cursor = conn.cursor()
     cursor.execute("INSERT INTO logs (data, type, function, message) VALUES (?, ?, ?, ?)",
                    (date_str, log_type, function, message))
-    if log_type in ['ERROR', 'CRITICAL', 'FAILURE']:
+    if log_type in current_app.config['LOG_TYPE_NOTIFICATION'].split(","):
         socket_ioobj = current_app.config['socketio']
         socket_ioobj.notify_user(user.userhash, message, date_str, log_name, 'red')
         print("sent message")

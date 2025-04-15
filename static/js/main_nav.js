@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const notificationContainer = document.getElementById("notification-container");
     const notificationCountBadge = document.getElementById("notification-count");
     let notificationCount = 0;
-    const socket = io();
+    const socket = io('https://logger.pythonweblog.com/');
+
 
     const updateNotificationBadge = () => {
         notificationCountBadge.innerText = notificationCount;
@@ -137,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 uh = data.uh;
                 socket.emit('join_room', { uh: data.uh });
-                console.log("User Hash:", data.uh);
             } catch (error) {
                 console.error("Erro ao obter uh:", error);
             }

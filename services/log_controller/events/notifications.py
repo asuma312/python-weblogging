@@ -1,10 +1,11 @@
 from flask_socketio import emit, join_room
 import os
 import sqlite3
+from flask import current_app
 from datetime import datetime,timedelta
 import time
 #pega o parent directory do arquivo atual
-cache_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'cache')
+cache_root = current_app.config['CACHE_PATH']
 os.makedirs(cache_root, exist_ok=True)
 
 def setup_db(cache_db_path:str)->sqlite3.Connection:

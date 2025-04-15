@@ -29,17 +29,16 @@ def create_app():
         db.create_all()
         if not os.path.exists(app.config['SQLITE_DBPATH']):
             os.makedirs(app.config['SQLITE_DBPATH'])
+        from services.log_controller.events.logs import register_logs_events
+        from services.log_controller.events.notifications import register_notification_events
+        from services.log_controller.events.auth import register_auth_events
+        register_logs_events(socketio)
+        register_notification_events(socketio)
+        register_auth_events(socketio)
+        app.config['socketio'] = socketio
 
     socketio.init_app(app, cors_allowed_origins="*")
 
-    from services.log_controller.events.logs import register_logs_events
-    from services.log_controller.events.notifications import register_notification_events
-    from services.log_controller.events.auth import register_auth_events
-
-    register_logs_events(socketio)
-    register_notification_events(socketio)
-    register_auth_events(socketio)
-    app.config['socketio'] = socketio
 
 
     @app.route("/debug")

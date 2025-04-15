@@ -68,10 +68,13 @@ def register_auth_events(socketio):
         session_id = data.get('session_id')
 
         if not username or not password or not session_id:
+            print("Missing data:", username, password, session_id)
             return emit('login_response', {"error": "Username, password and session_id are required"})
 
         user = User.query.filter_by(name=username).first()
+        print("User found:", user)
         if not user or not user.verify_password(password):
+            print("Invalid credentials")
             return emit('login_response', {"error": "Invalid credentials"})
         
         user.generate_token()

@@ -32,8 +32,12 @@ def create_app():
     socketio.init_app(app, cors_allowed_origins="*")
 
     from services.log_controller.events.logs import register_logs_events
+    from services.log_controller.events.notifications import register_notification_events
+    from services.log_controller.events.auth import register_auth_events
 
     register_logs_events(socketio)
+    register_notification_events(socketio)
+    register_auth_events(socketio)
 
 
     @app.route("/debug")

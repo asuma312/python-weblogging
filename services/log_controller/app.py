@@ -23,6 +23,7 @@ def create_app():
     for key in os.environ.keys():
         app.config[key] = os.environ[key]
 
+
     with app.app_context():
         db.init_app(app)
         db.create_all()
@@ -38,6 +39,7 @@ def create_app():
     register_logs_events(socketio)
     register_notification_events(socketio)
     register_auth_events(socketio)
+    app.config['socketio'] = socketio
 
 
     @app.route("/debug")

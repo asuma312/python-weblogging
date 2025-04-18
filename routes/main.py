@@ -31,6 +31,18 @@ def dashboard():
         db.split("log_")[-1].split(".sqlite")[0]
         for db in os.listdir(user_path) if db.endswith('.sqlite')
     ]
+
+    if len(database_logs) == 0:
+        return render_template('main/dashboard.html',
+                                 database_logs=database_logs,
+                                 logs={},
+                                 selected_log=None,
+                                 total_log=0,
+                                 total_errors=0,
+                                 total_warnings=0,
+                                 has_next_page=False,
+                                 )
+
     total_log = 0
     total_errors = 0
     total_warnings = 0

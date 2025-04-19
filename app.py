@@ -77,7 +77,7 @@ def create_app():
     }
 
     swagger = Swagger(app, config=swagger_config, template=swagger_template)
-    #change for redis in prod
+    #use redis on prod
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['SESSION_PERMANENT'] = True
     app.config['SESSION_USE_SIGNER'] = True

@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import os
 from models import db
 from flasgger import Swagger
+from flask_session import Session
+
 load_dotenv()
 
 
@@ -75,6 +77,11 @@ def create_app():
     }
 
     swagger = Swagger(app, config=swagger_config, template=swagger_template)
+    #change for redis in prod
+    app.config['SESSION_TYPE'] = 'filesystem'
+    app.config['SESSION_PERMANENT'] = True
+    app.config['SESSION_USE_SIGNER'] = True
+    server_session = Session(app)
 
 
     @app.route("/debug")

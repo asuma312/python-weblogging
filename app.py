@@ -26,6 +26,7 @@ def create_app():
             os.makedirs(app.config['SQLITE_DBPATH'])
 
     socketio.init_app(app, cors_allowed_origins="*")
+    socketio.app = app
 
     from routes.api.logs import logs_bp
     from routes.api.auth import auth_bp

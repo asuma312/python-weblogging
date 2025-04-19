@@ -1,7 +1,5 @@
-from flask import current_app
 from flask_socketio import emit
 from utils.log_utils import insert_log
-from utils.path import get_user_path
 from datetime import datetime
 from models.dataclasses.logtypes import LOGTYPES
 from models.sql.setup import setup_database

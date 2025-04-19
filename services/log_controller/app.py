@@ -24,6 +24,7 @@ def create_app():
         app.config[key] = os.environ[key]
 
 
+
     with app.app_context():
         db.init_app(app)
         db.create_all()
@@ -38,6 +39,7 @@ def create_app():
         app.config['socketio'] = socketio
 
     socketio.init_app(app, cors_allowed_origins="*")
+    socketio.app = app
 
 
 

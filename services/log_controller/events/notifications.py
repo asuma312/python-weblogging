@@ -91,6 +91,11 @@ def register_notification_events(socketio):
 
     def notify_user(uh, message,created_at, log_name, priority='green'):
         print(f"Notificando usuário {uh} com a mensagem: {message}")
+
+        priorities = {
+            "red": ['error', 'critical', 'failure']
+        }
+
         cache_user_path = os.path.join(cache_root, uh)
         os.makedirs(cache_user_path, exist_ok=True)
         cache_db_path = os.path.join(cache_user_path, 'cache.sqlite3')
@@ -163,7 +168,10 @@ def register_notification_events(socketio):
             </body>
             </html>
             """
+            priorities_name:list[str] = priorities.get(priority, [])
             for email in emails:
+                if not any(priority_name in email.notifications.split(",") for priority_name in priorities_name):
+                    continue
                 print("sending email to", email.email)
                 send_email(email.email, 'Notificação PyWebLog', message_html.format(message=message, priority=priority, created_at=created_at, log_name=log_name))
     socketio.notify_user = notify_user
